@@ -1,0 +1,93 @@
+Docker 101
+
+Containers = Namespaces + CGroups
+Namespaces: separation of resources (i.e filesystem, process tree, networking)
+CGroups: can limit resources that a container uses
+
+LXC and libcontainer is a driver to the Kernel features
+
+libcontainer lives inside the Docker Engine and it can be cross platform
+
+
+docker -v
+docker version
+docker info
+
+On Mac
+/Users/${USER_ID}/Library/Containers/com.docker.docker/
+On Linux
+/var/lib/docker/aufs
+
+Docker Images:
+Contain all meta-data for firing up containers
+They are stored under /var/lib/docker/aufs (in linux)
+They are usually/always stacked/layered with each image having its own UUID
+
+docker pull -a ubuntu
+docker images
+docker images ls
+docker images --tree
+docker commit ${UUID} ${NAME}: commits the changes that were made in a container and creates a new image out of it
+docker save -o ${OUTPUT_FOLDER} ${NAME}: creates a .tar from a container's image
+docker load -i ${INPUT_FOLDER}: imports a docker image
+docker commit ${HASH_ID} ${NEW_NAME}: A new image with the latest changes made on that image
+docker history ${IMAGE_NAME}
+
+Docker Containers:
+Are launch from images, they are running instances of images
+docker run
+docker -it 
+
+When inside a container we can get out by Ctrl+P+Q
+
+Docker Registries and Repos
+
+hub.docker.com the official registry and inside we can find repositories
+
+Docker Containers:
+docker ps
+docker top ${UUID}
+docker run --cpu-shares=256
+docker run memory=1G
+docker run -d ubuntu:14.04.1 runs the containers in detached mode
+docker inspect ${UUID}
+docker attach ${UUID}
+
+Container Management
+docker stop ${UUID} : Sends a SIGTERM in PID 1
+docker kill ${UUID} : Sends a SIGKILL in PID 1
+docker attach ${UUID} Attaches the shell to the I/O streams of PID 1 inside the container
+docker restart ${UUID}
+docker start ${UUID}
+docker rm -f ${UUID}
+docker logs ${UUID}
+
+Getting a terminal inside a running container
+nsenter 
+docker exec -it ${UUID} /bin/bash
+
+DOCKER FILES
+
+docker build -t ${TAG} ${DOCKERFILE_BASEDIR} 
+docker history ${IMAGE_ID} -> lists commands that were run to create the image
+docker run ${IMAGE}:${VERSION} -> runs the image
+
+MAINTAINER, FROM, RUN, EXPOSE, CMD, ENTRYPOINT, ENV, VOLUME, EXPOSE
+
+
+DOCKER REGISTRIES
+docker tag ${IMAGE_ID} ${USER_ID}/${REPOSITOROY}:${VERSION}
+
+Docker Volumes
+docker run -v ${HOST_PATH}:${VOLUME_PATH} -> maps a docker host's directory into a container
+docker run -v ${VOLUME_PATH} -> creates a volume path inside the container, which will be available outside the container as well
+docker rm -v ${CONTAINER_ID} -> deletes the container and also the volume
+
+
+
+docker push nikkatsa/${REPOSITORY}
+
+Docker Networking
+bridge0 -> The default network interface for docker containers
+brctl show -> Shows the info
+docker port ${CONTAINER_NAME}
