@@ -1,0 +1,67 @@
+#!/bin/bash
+
+java_home=/usr/libexec/java_home
+
+function listJDKs() {
+    echo "$($java_home -V 2>&1)"
+}
+
+function listJDKVendors() {
+    echo "$($java_home -V 2>&1 | tr ' ' '\0' | tr '\t' ' ' | cut -d ' ' -f2,1)"
+}
+
+function setJDK() {
+
+    local USAGE="Usage: setJDK [-v \${JDK_VERSION}] [-d \${JDK_DISTRIBUTION}]"
+
+    local OPTIND v d
+    while getopts "v:d:" OPTION; do
+        case "$OPTION" in
+            v)
+                local version=$OPTARG
+                ;;
+            d)
+                local dist=$OPTARG
+                ;;
+            ?)
+                echo $USAGE
+                return 1
+                ;;
+        esac
+    done
+
+    if [ $# -lt 1 ]; then
+        echo $USAGE
+        return 1
+    fi
+
+    if [ -n "$version" ] && [ "$dist" ]; then
+        echo "Setting JAVA to version $version and distribution $dist"
+        local versionAndDistNo=$($java_home -V 2>&1 | grep $dist | grep $version | wc -l)
+        if [ "$versionAndDistNo" -gt 1 ];then
+            echo "Multiple JAVA versions found for arguments -v $version -d $dist . Unable to setJDK"
+            listJDKs
+            return 1
+        else
+            export JAVA_HOME=$($java_home -V 2>&1 | grep $dist | grep $version | tr ' ' '\0' | tr '\t' ' ' | cut -d ' ' -f 3)
+        fi
+    elif [ -n "$dist" ]; then
+        echo "Setting JAVA to distribution $dist"
+        local distNo=$($java_home -V 2>&1 | grep $dist | wc -l)
+        if [ $distNo -gt 1 ];then
+            echo "Multiple versions for $dist. Unable to setJDK"
+            listJDKs
+            return 1
+        else
+            export JAVA_HOME=$($java_home -V 2>&1 | grep $dist | tr ' ' '\0' | tr '\t' ' ' | cut -d ' ' -f 3)
+        fi
+    elif [ -n "$version" ]; then
+        echo "Setting JAVA to version $version"
+        export JAVA_HOME=$($java_home -v $version)
+    else
+        echo $USAGE
+    fi
+    
+    echo "JAVA_HOME=${JAVA_HOME}"
+    return 0
+}
