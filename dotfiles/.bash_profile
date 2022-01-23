@@ -15,7 +15,7 @@ alias untar='tar xvf'
 # local IP
 alias localip="sudo ifconfig | grep -Eo 'inet ([0-9]*\.){3}([0-9]*)' | grep -v '127.0.0.1'"
 
-setJDK -v 1.8 -d AdoptOpenJDK
+setJDK -v 17
 
 export PATH=$PATH:$JAVA_HOME
 
